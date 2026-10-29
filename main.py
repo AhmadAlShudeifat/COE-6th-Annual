@@ -7,7 +7,7 @@ from torch import nn, optim
 
 
 class football:
-    def __init__(self, modelpath="holistic_landmarker.task"): ...
+    def __init__(self): ...
 
 
 class tracker:
@@ -32,3 +32,11 @@ class tracker:
         proccesedframe = self.landmarker.detect_for_video(image, timestamp)
         if proccesedframe.pose.landmarks:
             poselandmark = proccesedframe.pose_landmarks[0]
+            bodylandmark = poselandmark[11:33]
+            for lm in bodylandmark:
+                x, y, z = lm.x, lm.y, lm.z
+            leftwrist = poselandmark[15]
+            rightwrist = poselandmark[16]
+            lefthip = poselandmark[23]
+            righthip = poselandmark[24]
+            return leftwrist, rightwrist, lefthip, righthip
