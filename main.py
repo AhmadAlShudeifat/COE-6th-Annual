@@ -7,6 +7,10 @@ from torch import nn, optim
 
 
 class football:
+    def __init__(self, modelpath="holistic_landmarker.task"): ...
+
+
+class tracker:
     def __init__(self, modelpath="holistic_landmarker.task"):
         self.hollistic = mp.tasks.BaseOptions
         self.holisticlandmarker = mp.tasks.vision.HolisticLandmarker
