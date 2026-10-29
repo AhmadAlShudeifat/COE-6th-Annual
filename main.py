@@ -3,6 +3,7 @@ import socket
 import cv2
 import mediapipe as mp
 from ultralytics import YOLO
+import numpy as np
 
 
 class football:
@@ -52,3 +53,41 @@ class tracker:
                 radius = int((x2 - x1) / 2)
                 return center_x, center_y, radius
         return None, None, None
+
+
+class camsocket:
+    def __init__(self):
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.bind(("127.0.0.1", 65512))
+        self.server_socket.listen(1)
+        self.conn = None
+
+    def accept(self):
+        self.conn, _ = self.server_socket.accept()
+
+    def recv_all(self, count):
+        buf = b""
+        while count > 0:
+            newbuf = self.conn.recv(count)
+            if not newbuf:
+                return None
+            buf += newbuf
+            count -= len(newbuf)
+        return buf
+
+    def get_frame(self):
+        packed_size = self.recv_all(4)
+        if not packed_size:
+            return None
+        message_size = struct.unpack("!I", packed_size)[0]
+        frame_data = self.recv_all(message_size)
+        if not frame_data:
+            return None
+        np_arr = np.frombuffer(frame_data, dtype=np.uint8)
+        return cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+    def close(self):
+        if self.conn:
+            self.conn.close()
+        self.server_socket.close()
