@@ -4,11 +4,10 @@ import cv2
 import mediapipe as mp
 from ultralytics import YOLO
 
-model = YOLO("yolov8n.pt")
-
 
 class football:
-    def __init__(self): ...
+    def __init__(self):
+        self.tracker = tracker()
 
 
 class tracker:
@@ -24,6 +23,7 @@ class tracker:
         self.landmarker = mp.tasks.vision.HolisticLandmarker.create_from_options(
             options
         )
+        self.model = YOLO("yolov8n.pt")
 
     def convertBGR(self, frame):
         rgbimage = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -43,7 +43,7 @@ class tracker:
             return leftwrist, rightwrist, lefthip, righthip
 
     def trackball(self, frame):
-        results = model(frame, classes=[32], verbose=False)
+        results = self.model(frame, classes=[32], verbose=False)
         for r in results:
             for box in r.boxes:
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
