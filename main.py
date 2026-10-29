@@ -4,11 +4,16 @@ import cv2
 import mediapipe as mp
 from ultralytics import YOLO
 import numpy as np
+import struct
 
 
 class football:
     def __init__(self):
         self.tracker = tracker()
+        self.sock = camsocket()
+
+    def getimage(self):
+        self.sock.recv_all()
 
 
 class tracker:
