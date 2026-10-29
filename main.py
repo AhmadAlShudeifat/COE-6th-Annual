@@ -2,8 +2,9 @@ import socket
 
 import cv2
 import mediapipe as mp
-import torch
-from torch import nn, optim
+from ultralytics import YOLO
+
+model = YOLO("yolov8n.pt")
 
 
 class football:
@@ -40,3 +41,14 @@ class tracker:
             lefthip = poselandmark[23]
             righthip = poselandmark[24]
             return leftwrist, rightwrist, lefthip, righthip
+
+    def trackball(self, frame):
+        results = model(frame, classes=[32], verbose=False)
+        for r in results:
+            for box in r.boxes:
+                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                center_x = int((x1 + x2) / 2)
+                center_y = int((y1 + y2) / 2)
+                radius = int((x2 - x1) / 2)
+                return center_x, center_y, radius
+        return None, None, None
