@@ -1,20 +1,22 @@
 import cv2
+import socket
+import struct
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket.connect(('127.0.0.1', 65512)) #localhost
 
-cam = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)
 
-frame_width = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))
-frame_height = int(cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
+try:
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        data = buffer.tobytes()
 
-fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-out = cv2.VideoWriter('output.mp4', fourcc, 20.0, (frame_width, frame_height))
+        message_size = struct.pack('!I', len(data))
 
-while True:
-    ret, frame = cam.read()
-    out.write(frame)
-    cv2.imshow('Camera', frame)
-    if cv2.waitKey(1) == ord('q'):
-        break
-
-cam.release()
-out.release()
-cv2.destroyAllWindows()
+        client_socket.sendall(message_size + data)
+finally:
+    cap.release()
+    client_socket.close()
